@@ -6,6 +6,7 @@ Release:	1
 License:	GPL
 Group:		X11/Applications
 Source0:	http://xavier.serpaggi.free.fr/seti/seti-%{version}.tar.bz2
+# Source0-md5:	bea7ca090a486560207544c1f665a2c1
 URL:		http://xavier.serpaggi.free.fr/seti/
 BuildRequires:	gkrellm-devel >= 1.2.2
 Requires:	gkrellm
