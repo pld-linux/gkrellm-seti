@@ -1,0 +1,270 @@
+Only in seti-0.7.0b: .seti.c.swp
+diff -u -r seti-0.7.0b-gkrellm1/INSTALL seti-0.7.0b/INSTALL
+--- seti-0.7.0b-gkrellm1/INSTALL	Fri Mar 29 22:10:41 2002
++++ seti-0.7.0b/INSTALL	Sat Aug 17 15:30:45 2002
+@@ -27,7 +27,7 @@
+ 
+ 	make install-home
+ 
+-This will compile the plugin and copy it under ~/.gkrellm/plugins/
++This will compile the plugin and copy it under ~/.gkrellm2/plugins/
+ directory.
+ 
+ If you want to have this plugin avaible for all people in your system, type:
+@@ -42,13 +42,13 @@
+ 
+ 1. Edit seti.h and compile:
+ 
+-	gcc -03 -fPIC `gtk-config --cflags` `imlib-config --cflags-gdk` -c seti.c
++	gcc -03 -fPIC `pkg-config gtk+-2.0 --cflags`  -c seti.c
+ 
+ 	Note: if you want to be able to see debug messages related to this
+ 	      plugin when GKrellM is started in debug mode (see below), you
+ 	      need to compile it with the -DDEBUG option.
+ 
+-	gcc -DDEBUG -03 -fPIC `gtk-config --cflags` `imlib-config --cflags-gdk` -c seti.c
++	gcc -DDEBUG -03 -fPIC `pkg-config gtk+-2.0 --cflags`  -c seti.c
+ 
+ 
+ 2. Build the share object:
+@@ -57,7 +57,7 @@
+ 
+ 3. Install the plugin:
+ 
+-	cp seti.so ~/.gkrellm/plugins
++	cp seti.so ~/.gkrellm2/plugins
+ 
+ In both case you will have to restart GKrellM.
+ 
+diff -u -r seti-0.7.0b-gkrellm1/Makefile seti-0.7.0b/Makefile
+--- seti-0.7.0b-gkrellm1/Makefile	Tue Apr  2 10:32:54 2002
++++ seti-0.7.0b/Makefile	Sat Aug 17 15:30:45 2002
+@@ -1,5 +1,5 @@
+ CC=gcc
+-CFLAGS= -fpic -Wall `gtk-config --cflags` `imlib-config --cflags-gdk` -I/usr/X11R6/include
++CFLAGS= -fpic -Wall `pkg-config gtk+-2.0 --cflags`  -I/usr/X11R6/include
+ LDFLAGS= -shared -Wl
+ 
+ # uncomment the second DBGFLAGS line to make seti@home plugin
+@@ -15,8 +15,8 @@
+ 	install seti.so ${DESTDIR}${PREFIX}/lib/gkrellm
+ 
+ install-home: seti.so
+-	install -d ${HOME}/.gkrellm/plugins/
+-	install seti.so ${HOME}/.gkrellm/plugins/
++	install -d ${HOME}/.gkrellm2/plugins/
++	install seti.so ${HOME}/.gkrellm2/plugins/
+ 
+ seti.so: utils.o seti.o
+ 	$(CC) $(LDFLAGS) -o seti.so utils.o seti.o
+diff -u -r seti-0.7.0b-gkrellm1/seti.c seti-0.7.0b/seti.c
+--- seti-0.7.0b-gkrellm1/seti.c	Tue Apr  2 10:29:41 2002
++++ seti-0.7.0b/seti.c	Sat Aug 17 15:40:17 2002
+@@ -26,11 +26,11 @@
+ 
+ /* seti.c       - requires GKrellM 1.2.2 or later.
+  *  If this file is compiled as a shared object file and installed in
+- *  in your ~/.gkrellm/plugins directory, then it will be loaded when
++ *  in your ~/.gkrellm2/plugins directory, then it will be loaded when
+  *  gkrellm starts up.
+- *     gcc -fPIC `gtk-config --cflags` `imlib-config --cflags-gdk` -c seti.c
++ *     gcc -fPIC `pkg-config gtk+-2.0 --cflags`  -c seti.c
+  *     gcc -shared -Wl -o seti.so seti.o
+- *     cp seti.so ~/.gkrellm/plugins
++ *     cp seti.so ~/.gkrellm2/plugins
+  */
+  
+ 
+@@ -71,20 +71,20 @@
+ static GtkWidget	*pcpu_select_button[3];
+ static GtkTooltips	*tooltip ;
+ 
+-static GdkImlibImage	*krell_image_seti ;
+-static GdkImlibImage	*bg_meter_image_seti ;
+-static GdkImlibImage	*krell_image_pcpu ;
+-static GdkImlibImage	*bg_meter_image_pcpu ;
+-
+-static Monitor		*monitor ;
+-static Panel		*panel;
+-static Panel		*panel_pcpu ;
++static GkrellmPiximage	*krell_image_seti ;
++static GkrellmPiximage	*bg_meter_image_seti ;
++static GkrellmPiximage	*krell_image_pcpu ;
++static GkrellmPiximage	*bg_meter_image_pcpu ;
++
++static GkrellmMonitor		*monitor ;
++static GkrellmPanel		*panel;
++static GkrellmPanel		*panel_pcpu ;
+ static gint		 style_id ;
+ 
+-static Krell		*k;
+-static Krell		*k_pcpu ;
+-static Krell		*k_pcpu2 ;
+-static Decal		*decal_text_pcpu ;
++static GkrellmKrell		*k;
++static GkrellmKrell		*k_pcpu ;
++static GkrellmKrell		*k_pcpu2 ;
++static GkrellmDecal		*decal_text_pcpu ;
+ static gchar		 pcpu_text[10] ;
+ 
+ static gint		 pcpu_display ;
+@@ -278,9 +278,9 @@
+ 
+ 			/* Updating a krell (or drawing a decal) draws only into local
+ 			 |  pixmaps.  After all krells and decals are "drawn", they must be
+-			 |  really drawn to the screen with gkrellm_draw_layers().
++			 |  really drawn to the screen with gkrellm_draw_panel_layers().
+ 			 */
+-			gkrellm_draw_layers(panel);
++			gkrellm_draw_panel_layers(panel);
+ 			
+ 			update_tooltip() ;
+ 		}
+@@ -487,9 +487,9 @@
+ 
+ static void create_seti(GtkWidget *vbox, gint first_create)
+ {
+-	Style		*style_seti = NULL ;
+-	Style		*style_pcpu = NULL ;
+-	TextStyle	*ts = NULL ;
++	GkrellmStyle		*style_seti = NULL ;
++	GkrellmStyle		*style_pcpu = NULL ;
++	GkrellmTextstyle	*ts = NULL ;
+ 
+ 	
+ 	if (first_create) {
+@@ -501,14 +501,14 @@
+ 	style_seti->krell_yoff = 3 ;
+ 	style_seti->krell_depth = 22 ;
+ 	style_seti->krell_x_hot = 24 ;
+-	gkrellm_load_image("krell_seti", krell_seti_xpm, &krell_image_seti, STYLE_NAME) ;
+-	gkrellm_load_image("bg_meter_seti", bg_meter_seti_xpm, &bg_meter_image_seti, STYLE_NAME) ;
+-	gkrellm_get_gkrellmrc_image_border("seti_bg_meter", bg_meter_image_seti, &style_seti->border) ;
++	gkrellm_load_piximage("krell_seti", krell_seti_xpm, &krell_image_seti, STYLE_NAME) ;
++	gkrellm_load_piximage("bg_meter_seti", bg_meter_seti_xpm, &bg_meter_image_seti, STYLE_NAME) ;
++	gkrellm_get_gkrellmrc_piximage_border("seti_bg_meter", bg_meter_image_seti, &style_seti->border) ;
+ 	/*
+ 	gkrellm_get_gkrellmrc_integer("seti_top_margin", &style_seti->top_margin) ;
+ 	gkrellm_get_gkrellmrc_integer("seti_bottom_margin", &style_seti->bottom_margin) ;
+ 	*/
+-	gkrellm_panel_bg_image_override(panel, bg_meter_image_seti) ; 
++	gkrellm_panel_bg_piximage_override(panel, bg_meter_image_seti) ; 
+ 
+ 	k = gkrellm_create_krell(panel, krell_image_seti, style_seti);
+ 	gkrellm_monotonic_krell_values(k, FALSE);
+@@ -527,14 +527,14 @@
+ 	style_pcpu = gkrellm_copy_style(style_seti) ;
+ 
+ 	if ( bg_meter_image_pcpu ) {
+-		gdk_imlib_kill_image(bg_meter_image_pcpu);
++		gkrellm_destroy_piximage(bg_meter_image_pcpu);
+ 		bg_meter_image_pcpu = NULL;
+ 	}
+-	gkrellm_load_image("bg_meter_pcpu", NULL, &bg_meter_image_pcpu, STYLE_NAME);
++	gkrellm_load_piximage("bg_meter_pcpu", NULL, &bg_meter_image_pcpu, STYLE_NAME);
+ 			
+ 	if ( bg_meter_image_pcpu ) {
+-		gkrellm_get_gkrellmrc_image_border("seti_pcpu_bg_meter", bg_meter_image_pcpu, &style_pcpu->border);
+-		gkrellm_panel_bg_image_override(panel_pcpu, bg_meter_image_pcpu);
++		gkrellm_get_gkrellmrc_piximage_border("seti_pcpu_bg_meter", bg_meter_image_pcpu, &style_pcpu->border);
++		gkrellm_panel_bg_piximage_override(panel_pcpu, bg_meter_image_pcpu);
+ 	}
+ 	/*
+ 	gkrellm_get_gkrellmrc_integer("seti_pcpu_top_margin", &style_pcpu->top_margin);
+@@ -547,7 +547,7 @@
+ 	gkrellm_get_gkrellmrc_integer("seti_pcpu_yoff", &style_pcpu->krell_yoff);
+ 	gkrellm_get_gkrellmrc_integer("seti_pcpu_depth", &style_pcpu->krell_depth);
+ 	gkrellm_get_gkrellmrc_integer("seti_pcpu_x_hot", &style_pcpu->krell_x_hot);
+-	gkrellm_load_image("krell_pcpu", krell_pcpu_xpm, &krell_image_pcpu, STYLE_NAME) ;
++	gkrellm_load_piximage("krell_pcpu", krell_pcpu_xpm, &krell_image_pcpu, STYLE_NAME) ;
+ 
+ 	/* krell in the second panel: */
+ 	k_pcpu = gkrellm_create_krell(panel_pcpu, krell_image_pcpu, style_pcpu);
+@@ -625,7 +625,7 @@
+ 	gtk_box_pack_start(GTK_BOX(tab_vbox), tabs, TRUE, TRUE, 0) ;
+ 
+ 	/* Config tab */
+-	vbox = gkrellm_create_framed_tab(tabs, _("Config")) ;
++	vbox = gkrellm_gtk_framed_notebook_page(tabs, _("Config")) ;
+ 	
+ 	label = gtk_label_new(_("Path to state.sah file:")) ;
+ 	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0) ;
+@@ -659,7 +659,7 @@
+ 	
+ 
+ 	/* Client control tab */
+-	vbox = gkrellm_create_framed_tab(tabs, _("Client Control")) ;
++	vbox = gkrellm_gtk_framed_notebook_page(tabs, _("Client Control")) ;
+ 
+ 	label = gtk_label_new(_("Command to start the client:")) ;
+ 	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0) ;
+@@ -683,7 +683,7 @@
+ 	
+ 	
+ 	/* CPU Usage tab */
+-	vbox = gkrellm_create_framed_tab(tabs, _("CPU Usage"));
++	vbox = gkrellm_gtk_framed_notebook_page(tabs, _("CPU Usage"));
+ 
+ 	label = gtk_label_new(_("How do you want CPU usage info to be displayed?"));
+ 	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+@@ -708,7 +708,7 @@
+ 
+ 
+ 	/* User info tab */
+-	vbox = gkrellm_create_framed_tab(tabs, _("User Info")) ;
++	vbox = gkrellm_gtk_framed_notebook_page(tabs, _("User Info")) ;
+ 
+ 	hbox = gtk_hbox_new(TRUE, 0) ;
+ 	hbox1 = gtk_hbox_new(FALSE, 0) ;
+@@ -837,10 +837,10 @@
+ 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+ 	gtk_container_add(GTK_CONTAINER(frame), scrolled) ;
+ 
+-	text = gtk_text_new(NULL, NULL);
++	text = gtk_text_view_new();
+ 
+-	gkrellm_add_info_text(text, seti_info_text, sizeof(seti_info_text) / sizeof(gchar *));
+-	gtk_text_set_editable(GTK_TEXT(text), FALSE);
++	gkrellm_gtk_text_view_append_strings(text, seti_info_text, sizeof(seti_info_text) / sizeof(gchar *));
++	gtk_text_view_set_editable(GTK_TEXT_VIEW(text), FALSE);
+ 	gtk_container_add(GTK_CONTAINER(scrolled), text);
+ 
+ 
+@@ -983,7 +983,7 @@
+ 
+ 
+ /* The monitor structure tells GKrellM how to call the plugin routines.  */
+-static Monitor  plugin_mon      =
++static GkrellmMonitor  plugin_mon      =
+ {
+ 	CONFIG_NAME,	    /* Title for config clist.  */
+ 	0,		    /* Id, 0 if a plugin        */
+@@ -1013,10 +1013,10 @@
+ };
+ 
+ 
+-/* All GKrellM plugins must have one global routine named init_plugin()
++/* All GKrellM plugins must have one global routine named gkrellm_init_plugin()
+  * which returns a pointer to a filled in monitor structure.
+  */
+-Monitor *init_plugin()
++GkrellmMonitor *gkrellm_init_plugin()
+ {
+ 	/* If this next call is made, the background and krell images for this
+ 	 |  plugin can be custom themed by putting bg_meter.png or krell.png in the
+diff -u -r seti-0.7.0b-gkrellm1/seti.h seti-0.7.0b/seti.h
+--- seti-0.7.0b-gkrellm1/seti.h	Tue Apr  2 10:29:54 2002
++++ seti-0.7.0b/seti.h	Sat Aug 17 15:30:45 2002
+@@ -25,7 +25,7 @@
+  */
+  
+ 
+-#include <gkrellm/gkrellm.h>
++#include <gkrellm2/gkrellm.h>
+ #if (GKRELLM_VERSION_MAJOR<1) || (GKRELLM_VERSION_MAJOR==1 \
+   && GKRELLM_VERSION_MINOR==2 && GKRELLM_VERSION_REV<2)
+ #error This plugin requires GKrellM version >= 1.2.2
+Only in seti-0.7.0b: seti.o
+Binary files seti-0.7.0b-gkrellm1/seti.so and seti-0.7.0b/seti.so differ
+Only in seti-0.7.0b: utils.o
+
