@@ -2,7 +2,7 @@ Summary:	SETI@Home monitor plugin for gkrellm
 Summary(pl):	Plugin gkrellm z monitorem SETI@Home
 Name:		gkrellm-seti
 Version:	0.7.0b
-Release:	2
+Release:	3
 License:	GPL
 Group:		X11/Applications
 Source0:	http://xavier.serpaggi.free.fr/seti/seti-%{version}.tar.bz2
@@ -35,7 +35,7 @@ Plugin GKrellM pozwalaj±cy monitorowaæ swoje postêpy w SETI@Home.
 %install
 rm -rf $RPM_BUILD_ROOT
 
-install -D seti.so $RPM_BUILD_ROOT%{_libdir}/gkrellm/seti.so
+install -D seti.so $RPM_BUILD_ROOT%{_libdir}/gkrellm2/plugins/seti.so
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -43,4 +43,4 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc README ChangeLog TODO
-%attr(755,root,root) %{_libdir}/gkrellm/seti.so
+%attr(755,root,root) %{_libdir}/gkrellm2/plugins/seti.so
