@@ -10,7 +10,7 @@ Source0:	http://xavier.serpaggi.free.fr/seti/seti-%{version}.tar.bz2
 Patch0:		http://xavier.serpaggi.free.fr/seti/seti-0.7.0b-gkrellm2.diff
 URL:		http://xavier.serpaggi.free.fr/seti/
 BuildRequires:	gkrellm-devel >= 2.0
-BuildRequires:	gtk+2-devel >= 2.0.0
+BuildRequires:	gtk+2-devel >= 1:2.0.0
 BuildRequires:	pkgconfig
 Requires:	gkrellm >= 2.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
