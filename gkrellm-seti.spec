@@ -6,7 +6,10 @@ Release:	1
 License:	GPL
 Group:		X11/Applications
 Group(de):	X11/Applikationen
+Group(es):	X11/Aplicaciones
 Group(pl):	X11/Aplikacje
+Group(pt_BR):	X11/Aplicações
+Group(pt):	X11/Aplicações
 Source0:	http://xavier.serpaggi.free.fr/seti/seti-%{version}.tar.bz2
 Patch0:		%{name}-makefile.patch
 URL:		http://xavier.serpaggi.free.fr/seti/
