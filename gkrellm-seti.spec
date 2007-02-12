@@ -1,5 +1,5 @@
 Summary:	SETI@Home monitor plugin for gkrellm
-Summary(pl):	Plugin gkrellm z monitorem SETI@Home
+Summary(pl.UTF-8):   Plugin gkrellm z monitorem SETI@Home
 Name:		gkrellm-seti
 Version:	0.7.0b
 Release:	3
@@ -18,8 +18,8 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %description
 A GKrellM plugin which lets you monitor your SETI@Home progress.
 
-%description -l pl
-Plugin GKrellM pozwalaj±cy monitorowaæ swoje postêpy w SETI@Home.
+%description -l pl.UTF-8
+Plugin GKrellM pozwalajÄ…cy monitorowaÄ‡ swoje postÄ™py w SETI@Home.
 
 %prep
 %setup -q -n seti-%{version}
