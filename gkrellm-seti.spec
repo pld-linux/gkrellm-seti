@@ -23,7 +23,7 @@ Plugin GKrellM pozwalający monitorować swoje postępy w SETI@Home.
 
 %prep
 %setup -q -n seti-%{version}
-%patch0 -p1
+%patch -P0 -p1
 
 %build
 # typo - two different variables for optflags
